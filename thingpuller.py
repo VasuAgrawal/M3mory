@@ -3,8 +3,8 @@
 import requests
 import string
 
-def getSTLfile(keyphrase):
-    things = findThings(keyPhrase)
+def getSTLFile(keyphrase):
+    things = findThings(keyphrase)
     thing = things[1]
     return pullFile(thing)
 
@@ -35,15 +35,16 @@ def getLink(thingID):
     num = str()
     while textify[0] in string.digits:
         num += textify[0]
+        textify = textify[1:]
     newrl = "http://www.thingiverse.com/download:" + num
-    return num
+    return newrl
 
 def pullFile(thingID):
     link = getLink(thingID)
     with open((str(thingID) + ".stl"), 'wb') as handle:
         response = requests.get(link, stream=True)
-    if not response.ok:
-        return
-    for block in response.iter_content(1024):
-        handle.write(block)
+        if not response.ok:
+            return
+        for block in response.iter_content(1024):
+            handle.write(block)
         return (str(thingID) + ".stl")
