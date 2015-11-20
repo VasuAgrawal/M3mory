@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 import block_parser as bp
 import copy
+import thingpuller as tp
 
 keys = ""
 with open("keys.txt") as f:
@@ -132,6 +133,8 @@ def main():
 
     for block in blocks[-2:]:
         location, phrases = bp.process(block)
+        for val, phrase in phrases:
+            tp.pullFile(phrase)
         print "Location of event: ", location
         print "Keywords of event: ", phrases
         print
