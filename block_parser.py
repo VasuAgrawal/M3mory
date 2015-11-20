@@ -44,6 +44,26 @@ class UserEvent(object):
                 else:
                     self.phrases[noun] = self.toadd(likes)
 
+    def clean_location(self):
+        # return the string for the location that's the lowest value because the
+        # likes are messed up :|
+        if len(self.location.keys()) > 0:
+            sort = [(self.location[key], key) for key in self.location]
+            return min(sort)[1][2:]
+        else:
+            return "No Location Found"
+
+    def clean_phrases(self):
+        if len(self.phrases.keys()) > 0:
+            sort = [(self.phrases[key], key) for key in self.phrases if
+                    self.phrases[key] > 0]
+            sort.sort()
+            return sort[-4:]
+        else:
+            return []
+
+        # find the phrases with the maximum value 
+
 def process(events):
     # takes in a list of events and returns a list of keywords with some
     # probability. loads of cool things that can happen here to try to classify
@@ -52,14 +72,13 @@ def process(events):
 
     for event in events:
         if "message" in event.__dict__:
-            print event.likes, event.message
+            # print event.likes, event.message
             ue.parse_message(event.message, event.likes)
         if "story" in event.__dict__:
-            print event.likes, event.story
+            # print event.likes, event.story
             ue.parse_story(event.story, event.likes)
 
-    print ue.location
-    print ue.phrases
+    return ue.clean_location(), ue.clean_phrases()
 
 def counts(s):
     count = dict()
