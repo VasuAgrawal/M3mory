@@ -2,6 +2,7 @@ import json
 import urllib2
 import fuckit
 import base64
+import copy
 #import numpy as np
 #import cv2
 
@@ -13,7 +14,7 @@ keys = keys.splitlines()
 
 ckey = keys[0]
 
-history = 50
+history = 100
 page = "feed"
 
 postURL = "https://graph.facebook.com/v2.5/me/%s?limit=%d&access_token=%s" % (page, history, "%s")
@@ -23,6 +24,7 @@ imageURL = "https://graph.facebook.com/v2.5/%s?fields=source&access_token=%s"
 
 class Event(object):
     def __init__(self):
+        self.likes = 0
         pass
 
     def __str__(self):
@@ -81,27 +83,38 @@ def getDate(time):
     time = time[:10]
     time = time.replace("-", "")
     time = int(time)
-    print time
     return time
 
-def getRunningAverage(times, i):
-    PERIOD = 5
-    total = 0
-    for k in xrange(PERIOD):
-        if (i - k < 0): return total/PERIOD
-        time = times[i-k]
-        try:
-            total += getDate(time.created_time)
-            break
-        except AttributeError:
-            pass
-    return total/PERIOD
+def getBlock(times, i):
+    block = [times[i]]
+    date = getDate(times[i].created_time)
+    length = len(times)
+    if (i == length - 1): return block
+
+    nextDate = getDate(times[i+1].created_time)
+    # Append to block only if dates are close to each other
+    while (i != length - 1 and date + 3 > nextDate):
+        i += 1
+        block.append(times[i])
+        nextDate = getDate(times[i].created_time)
+    return block
 
 def getTimeBlocks(times):
     length = len(times)
-    for i in xrange(length):
-        runningAverage = getRunningAverage(times, i)
-    return
+    timeBlocks = []
+    i = 0
+    while i < length:
+        newBlock = getBlock(times, i)
+        i += len(newBlock)
+        timeBlocks.append(newBlock)
+    return timeBlocks
+
+def filterBlocks(blocks):
+    newBlocks = []
+    for block in blocks:
+        if (len(block) != 1 or block[0].likes > 70):
+            newBlocks.append(block)
+    return newBlocks
 
 def main():
     get(postURL)
@@ -115,14 +128,6 @@ def main():
     sorted_times = [data_dict[k] for t,k in times]
 
     blocks = getTimeBlocks(sorted_times)
+    blocks = filterBlocks(blocks)
 
-"""
-    A = "409102435841571"
-
-    times = [(data_dict[k].created_time,k) for k in data_dict]
-#    for t,k in sorted(times)[::-1]:
-        # print data_dict[k] if data_dict[k].__dict__.get("object_id") == A else ""
- #       print data_dict[k]
-    blocks = getTimeBlocks(times)
-"""
 main()
