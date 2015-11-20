@@ -130,10 +130,4 @@ def main():
     blocks = getTimeBlocks(sorted_times)
     blocks = filterBlocks(blocks)
 
-    for block in blocks:
-        print "-------"
-        for time in block:
-            print time
-        print "-------"
-
 main()
