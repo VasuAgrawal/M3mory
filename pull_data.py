@@ -2,8 +2,9 @@ import json
 import urllib2
 import fuckit
 import base64
-#import numpy as np
-#import cv2
+import numpy as np
+import cv2
+import block_parser as bp
 
 keys = ""
 with open("keys.txt") as f:
@@ -23,6 +24,8 @@ imageURL = "https://graph.facebook.com/v2.5/%s?fields=source&access_token=%s"
 
 class Event(object):
     def __init__(self):
+        self.likes = 0
+        self.image = None
         pass
 
     def __str__(self):
@@ -51,9 +54,12 @@ def add_to_dict(d):
         data_dict[sub["id"]] = e
 
 def get(URL):
-    response = urllib2.urlopen(URL % ckey).read()
-    j = json.loads(response)
-    add_to_dict(j.get("data", []))
+    try:
+        response = urllib2.urlopen(URL % ckey).read()
+        j = json.loads(response)
+        add_to_dict(j.get("data", []))
+    except:
+        print URL % ckey
 
 def getImage():
     for key in data_dict:
@@ -67,13 +73,7 @@ def getImage():
                 if ".jpg" in src:
                     data_dict[key].source = src
                     f = urllib2.urlopen(src).read()
-                    """
-                    arr = np.asarray(bytearray(f), dtype=np.uint8)
-                    img = cv2.imdecode(arr, -1)
-                    cv2.imshow("ha ha ha!", img)
-                    if cv2.waitKey() & 0xFF == 27:
-                        cv2.destroyAllWindows()
-                    """
+                    data_dict[key].image = base64.b64encode(f)
 
 # Return date in integer format
 # "2015-11-20T09:04:36+0000" (string) --> 20151120 (integer)
@@ -113,16 +113,18 @@ def main():
     times.sort()
 
     sorted_times = [data_dict[k] for t,k in times]
+    sorted_times = sorted_times[-11:-6]
 
-    blocks = getTimeBlocks(sorted_times)
+    bp.process(sorted_times)
 
-"""
-    A = "409102435841571"
+    # for s in sorted_times:
+        # print s
+        # if s.image != None:
+            # f = base64.b64decode(s.image)
+            # arr = np.asarray(bytearray(f), dtype = np.uint8)
+            # img = cv2.imdecode(arr, -1)
+            # cv2.imshow("lol", img)
+            # if cv2.waitKey() & 0xFF == 27:
+                # cv2.destroyWindows()
 
-    times = [(data_dict[k].created_time,k) for k in data_dict]
-#    for t,k in sorted(times)[::-1]:
-        # print data_dict[k] if data_dict[k].__dict__.get("object_id") == A else ""
- #       print data_dict[k]
-    blocks = getTimeBlocks(times)
-"""
 main()
