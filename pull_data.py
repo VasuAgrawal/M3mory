@@ -2,8 +2,8 @@ import json
 import urllib2
 import fuckit
 import base64
-import numpy as np
-import cv2
+#import numpy as np
+#import cv2
 
 keys = ""
 with open("keys.txt") as f:
@@ -11,7 +11,7 @@ with open("keys.txt") as f:
 
 keys = keys.splitlines()
 
-ckey = keys[1]
+ckey = keys[0]
 
 history = 50
 page = "feed"
@@ -67,12 +67,41 @@ def getImage():
                 if ".jpg" in src:
                     data_dict[key].source = src
                     f = urllib2.urlopen(src).read()
+                    """
                     arr = np.asarray(bytearray(f), dtype=np.uint8)
                     img = cv2.imdecode(arr, -1)
                     cv2.imshow("ha ha ha!", img)
                     if cv2.waitKey() & 0xFF == 27:
                         cv2.destroyAllWindows()
+                    """
 
+# Return date in integer format
+# "2015-11-20T09:04:36+0000" (string) --> 20151120 (integer)
+def getDate(time):
+    time = time[:10]
+    time = time.replace("-", "")
+    time = int(time)
+    print time
+    return time
+
+def getRunningAverage(times, i):
+    PERIOD = 5
+    total = 0
+    for k in xrange(PERIOD):
+        if (i - k < 0): return total/PERIOD
+        time = times[i-k]
+        try:
+            total += getDate(time.created_time)
+            break
+        except AttributeError:
+            pass
+    return total/PERIOD
+
+def getTimeBlocks(times):
+    length = len(times)
+    for i in xrange(length):
+        runningAverage = getRunningAverage(times, i)
+    return
 
 def main():
     get(postURL)
@@ -80,10 +109,20 @@ def main():
     get(likeURL)
     getImage()
 
+    times = [(data_dict[k].created_time,k) for k in data_dict]
+    times.sort()
+
+    sorted_times = [data_dict[k] for t,k in times]
+
+    blocks = getTimeBlocks(sorted_times)
+
+"""
     A = "409102435841571"
 
     times = [(data_dict[k].created_time,k) for k in data_dict]
-    for t,k in sorted(times)[::-1]:
+#    for t,k in sorted(times)[::-1]:
         # print data_dict[k] if data_dict[k].__dict__.get("object_id") == A else ""
-        print data_dict[k] 
+ #       print data_dict[k]
+    blocks = getTimeBlocks(times)
+"""
 main()
