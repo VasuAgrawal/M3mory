@@ -1,0 +1,10 @@
+{
+  "applications": {
+    "M3mory": {
+      "applicationId": "bZackX51T9UGTN7w5N3VQf2Ig1rojDgSPH2DKMWJ"
+    },
+    "_default": {
+      "link": "M3mory"
+    }
+  }
+}
